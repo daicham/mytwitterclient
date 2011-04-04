@@ -28,7 +28,7 @@ function updateTimeline (timeline) {
 
         var row = Ti.UI.createTableViewRow(
             {
-                height: 150,
+                height: 'auto',
                 layout: 'vertical'
             }
         );
@@ -47,7 +47,7 @@ function updateTimeline (timeline) {
         var nameLabel = Ti.UI.createLabel(
             {
                 width: 120,
-                height: 12,
+                height: 'auto',
                 left: 58,
                 top: -48,
                 fontSize: 6,
@@ -63,7 +63,7 @@ function updateTimeline (timeline) {
                 width: 257,
                 left: 58,
                 top: 1,
-                height: 100,
+                height: 'auto',
                 fontSize: 8
             }
         );
@@ -73,7 +73,7 @@ function updateTimeline (timeline) {
         var dateLabel = Ti.UI.createLabel(
             {
                 width: 200,
-                height: 12,
+                height: 'auto',
                 left: 58,
                 bottom: 8,
                 fontSize: 6
