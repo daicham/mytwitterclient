@@ -29,7 +29,7 @@ function updateTimeline (timeline) {
         var row = Ti.UI.createTableViewRow(
             {
                 height: 150,
-                layout: 'absolute'
+                layout: 'vertical'
             }
         );
 
@@ -49,7 +49,7 @@ function updateTimeline (timeline) {
                 width: 120,
                 height: 12,
                 left: 58,
-                top: 5,
+                top: -48,
                 fontSize: 6,
                 fontWeight: 'bold',
                 color: '#2b4771'
@@ -62,7 +62,7 @@ function updateTimeline (timeline) {
             {
                 width: 257,
                 left: 58,
-                top: 18,
+                top: 1,
                 height: 100,
                 fontSize: 8
             }
