@@ -1,1 +1,6 @@
 tmp
+build/iphone/build/*
+build/iphone/lib/*
+build/iphone/Resources/.version
+build/iphone/Resources/stylesheet.plist
+build/iphone/main.m
