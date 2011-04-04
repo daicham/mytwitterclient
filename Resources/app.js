@@ -15,8 +15,18 @@ var tab1 = Titanium.UI.createTab({
     window:win1
 });
 
+var timeline = [{text: 'コメント１'}, {text: 'コメント２'}, {text: 'コメント３'}]; //仮のデータ
+var data = [];
+for (var i=0; i<timeline.length;i++) {
+    var tweet = timeline[i];
+    var row = Ti.UI.createTableViewRow();
+    var commentLabel = Ti.UI.createLabel();
+    commentLabel.text = tweet.text;
+    row.add(commentLabel);
+    data.push(row);
+}
 var tableView = Ti.UI.createTableView({
-    data:[]
+    data:data
 });
 win1.add(tableView);
 win1.hideTabBar();
