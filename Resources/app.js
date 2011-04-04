@@ -25,10 +25,62 @@ function updateTimeline (timeline) {
     var currentData = [];
     for (var i=0; i<timeline.length;i++) {
         var tweet = timeline[i];
-        var row = Ti.UI.createTableViewRow();
-        var commentLabel = Ti.UI.createLabel();
+
+        var row = Ti.UI.createTableViewRow(
+            {
+                height: 150,
+                layout: 'absolute'
+            }
+        );
+
+        var imageView = Ti.UI.createImageView(
+            {
+                image: tweet.user.profile_image_url,
+                width: 48,
+                height: 48,
+                top: 5,
+                left: 5
+            }
+        );
+        row.add(imageView);
+
+        var nameLabel = Ti.UI.createLabel(
+            {
+                width: 120,
+                height: 12,
+                left: 58,
+                top: 5,
+                fontSize: 6,
+                fontWeight: 'bold',
+                color: '#2b4771'
+            }
+        );
+        nameLabel.text = tweet.user.screen_name;
+        row.add(nameLabel);
+
+        var commentLabel = Ti.UI.createLabel(
+            {
+                width: 257,
+                left: 58,
+                top: 18,
+                height: 100,
+                fontSize: 8
+            }
+        );
         commentLabel.text = tweet.text;
         row.add(commentLabel);
+
+        var dateLabel = Ti.UI.createLabel(
+            {
+                width: 200,
+                height: 12,
+                left: 58,
+                bottom: 8,
+                fontSize: 6
+            }
+        );
+        dateLabel.text = tweet.created_at;
+        row.add(dateLabel);
         currentData.push(row);
     }
     tableView.setData(currentData);
