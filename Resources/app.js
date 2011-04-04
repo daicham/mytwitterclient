@@ -15,19 +15,35 @@ var tab1 = Titanium.UI.createTab({
     window:win1
 });
 
-var timeline = [{text: 'コメント１'}, {text: 'コメント２'}, {text: 'コメント３'}]; //仮のデータ
+//画面表示時はまだデータとれていないので(非同期だから)最初は空にしておく
 var data = [];
-for (var i=0; i<timeline.length;i++) {
-    var tweet = timeline[i];
-    var row = Ti.UI.createTableViewRow();
-    var commentLabel = Ti.UI.createLabel();
-    commentLabel.text = tweet.text;
-    row.add(commentLabel);
-    data.push(row);
-}
 var tableView = Ti.UI.createTableView({
     data:data
 });
+
+function updateTimeline (timeline) {
+    var currentData = [];
+    for (var i=0; i<timeline.length;i++) {
+        var tweet = timeline[i];
+        var row = Ti.UI.createTableViewRow();
+        var commentLabel = Ti.UI.createLabel();
+        commentLabel.text = tweet.text;
+        row.add(commentLabel);
+        currentData.push(row);
+    }
+    tableView.setData(currentData);
+}
+
+var xhr = Ti.Network.createHTTPClient(); //Ti.Network.HTTPClientは非同期で動く
+var user = 'daicham';
+var url = "http://api.twitter.com/1/statuses/user_timeline.json?screen_name=" + user;
+xhr.open('GET', url);
+xhr.onload = function() {
+    var timeline = JSON.parse(this.responseText);
+    updateTimeline(timeline);
+};
+xhr.send();
+
 win1.add(tableView);
 win1.hideTabBar();
 //
