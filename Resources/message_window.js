@@ -65,21 +65,3 @@ postButton.addEventListener(
     }
 );
 win.add(postButton);
-
-//以下写経ではないが独自に追加
-var closeButton = Ti.UI.createButton(
-    {
-        top: 170,
-        left: 10,
-        width: 100,
-        height: 44,
-        title: 'CLOSE'
-    }
-);
-closeButton.addEventListener(
-    'click',
-    function() {
-        win.close();
-    }
-);
-win.add(closeButton);
