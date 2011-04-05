@@ -88,6 +88,21 @@ function updateTimeline (timeline) {
         currentData.push(row);
     }
     tableView.setData(currentData);
+
+    tableView.addEventListener(
+        'click',
+        function(e) {
+            var tweet = timeline[e.index];
+            var webWindow = Ti.UI.createWindow(
+                {
+                    url: 'tweet_window.js',
+                    status_id: tweet.id_str,
+                    screen_name: tweet.user.screen_name
+                }
+            );
+            Ti.UI.currentTab.open(webWindow);
+        }
+    );
 }
 
 var xhr = Ti.Network.createHTTPClient(); //Ti.Network.HTTPClientは非同期で動く
