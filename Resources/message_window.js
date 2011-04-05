@@ -10,7 +10,6 @@ var textArea = Ti.UI.createTextArea(
         borderRadius: 5
     }
 );
-
 win.add(textArea);
 var postButton = Ti.UI.createButton(
     {
@@ -21,5 +20,49 @@ var postButton = Ti.UI.createButton(
         title: 'POST'
     }
 );
+
+Ti.include('lib/oauth_adapter.js');
+var oAuthAdapter = new OAuthAdapter(
+    'consumer_secret',
+    'consumer_key',
+    'HMAC-SHA1'
+);
+oAuthAdapter.loadAccessToken('twitter');
+
+function tweet(message) {
+    oAuthAdapter.send(
+        'https://api.twitter.com/1/statuses/update.json',
+        [['status', message]],
+        'Twitter', //アラートのタイトル
+        'Published.', //成功したときのアラートメッセージ
+        'Not published.' //失敗したときのアラートメッセージ
+    );
+
+    if (oAuthAdapter.isAuthorized() == false) {
+        var receivePin = function() {
+            oAuthAdapter.getAccessToken(
+                'https://api.twitter.com/oauth/access_token'
+            );
+            oAuthAdapter.saveAccessToken('twitter');
+        };
+        oAuthAdapter.showAuthorizeUI(
+            'https://api.twitter.com/oauth/authorize?' +
+                oAuthAdapter.getRequestToken(
+                    'https://api.twitter.com/oauth/request_token'
+                ),
+            receivePin
+        );
+    }
+}
+
+postButton.addEventListener(
+    'click',
+    function() {
+        if (textArea.value) {
+            tweet(textArea.value);
+        }
+    }
+);
+
 win.add(postButton);
 
