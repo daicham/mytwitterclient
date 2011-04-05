@@ -1,4 +1,23 @@
 var win1 = Ti.UI.currentWindow;  
+var messageButton = Ti.UI.createButton(
+    {
+        systemButton : Titanium.UI.iPhone.SystemButton.ADD //iPhone固有コード
+    }
+);
+messageButton.addEventListener(
+    'click',
+    function() {
+        var messageWindow = Ti.UI.createWindow(
+            {
+                url: 'message_window.js',
+                title: 'message',
+                backgroundColor: '#fff'
+            }
+        );
+        messageWindow.open();
+    }
+);
+win1.rightNavButton = messageButton;
 
 //画面表示時はまだデータとれていないので(非同期だから)最初は空にしておく
 var data = [];
