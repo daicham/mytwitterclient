@@ -354,14 +354,14 @@ var OAuthAdapter = function(pConsumerSecret, pConsumerKey, pSignatureMethod)
         }
         Ti.API.debug('authorization header string : ' + str);
         return str;
-    }
+    };
 
     var removeOAuthParams = function(parameters) {
         var checkString = oauthParams.join(',') + ',';
         for (var p in parameters) {
            if (checkString.indexOf(p + ",") >= 0) delete parameters[p]; 
         }
-    }
+    };
 
     var makePostURL = function(url,parameters) {
         var checkString = oauthParams.join(',') + ',';
@@ -382,7 +382,8 @@ var OAuthAdapter = function(pConsumerSecret, pConsumerKey, pSignatureMethod)
         } else {
             return [url, parameters];
         }
-    }
+    };
+
     var makeGetURL = function(url, parameterMap) {
         var query = [];
         var keys = [];
@@ -396,7 +397,7 @@ var OAuthAdapter = function(pConsumerSecret, pConsumerKey, pSignatureMethod)
         } else {
             return url;
         }
-    }
+    };
 
     var send = function(params) {
         var pUrl            = params.url;
@@ -432,7 +433,7 @@ var OAuthAdapter = function(pConsumerSecret, pConsumerKey, pSignatureMethod)
           if(params.onError){
             params.onError(e);
           }
-        }
+        };
         client.onload = function(){
           Ti.API.debug('*** sendStatus, Response: [' + client.status + '] ' + client.responseText);
           if ((""+client.status).match(/^20[0-9]/)) {
@@ -444,11 +445,31 @@ var OAuthAdapter = function(pConsumerSecret, pConsumerKey, pSignatureMethod)
               params.onError({error:'[' + client.status + '] ' + client.responseText});
             }
           }
-        }
+        };
         client.open(pMethod, pUrl, false);
         client.send(parameterMap);
 
         return null;
     };
     this.send = send;
+
+    this.createOAuthHeader = function (params) {
+        this.loadAccessToken('twitter');
+        var pUrl            = params.url;
+        var pMethod         = params.method || "POST";
+        var message = createMessage(pUrl, pMethod);
+
+        accessor.tokenSecret = accessTokenSecret;
+        message.parameters.push(['oauth_token', accessToken]);
+
+        OAuth.setTimestampAndNonce(message);
+        OAuth.SignatureMethod.sign(message, accessor);
+
+        var parameterMap = OAuth.getParameterMap(message.parameters);
+        var oAuthHeaderElms = [];
+        for (var p in parameterMap) {
+           oAuthHeaderElms.push( encodeURIComponent(p) + "=" + encodeURIComponent(parameterMap[p]) );
+        }
+        return 'OAuth ' + oAuthHeaderElms.sort().join(', ');
+    };
 };

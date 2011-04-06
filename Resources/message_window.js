@@ -136,13 +136,40 @@ var imageView = Titanium.UI.createImageView(
     {
         width: 'auto',
         height: 240,
-        top: 20
+        top: 220
     }
 );
 imageView.hide();
 win.add(imageView);
 
 function uploadToTwitPic(image) {
+    var xhr = Ti.Network.createHTTPClient();
+
+    var verifyURL = 'https://api.twitter.com/1/account/verify_credentials.json';
+    var params = {
+        url: verifyURL,
+        method: 'GET'
+    };
+    var header = twitterApi.oAuthAdapter.createOAuthHeader(params);
+    Ti.API.debug(header);
+
+    xhr.onload = function() {
+        var res = JSON.parse(this.responseText);
+        textArea.value = ( textArea.value || '' ) + ' ' + res.url;
+    };
+    //xhr.onerror = function(){};
+
+    xhr.open('POST', 'https://api.twitpic.com/2/upload.json');
+    xhr.setRequestHeader('X-Verify-Credentials-Authorization', header);
+    xhr.setRequestHeader('X-Auth-Service-Provider', verifyURL);
+
+    xhr.send(
+        {
+            key: '35b84c4ad54ab8a53a8edf105c7756da',
+            message: textArea.value,
+            media: image
+        }
+    );
 }
 
 function startCamera() {
