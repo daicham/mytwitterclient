@@ -46,7 +46,6 @@ function tweet(message) {
             },
             onError: function(error) {
                 Ti.API.error(error);
-                Ti.API.error(error['source']);
             },
             parameters: params
         }
@@ -142,3 +141,85 @@ var imageView = Titanium.UI.createImageView(
 );
 imageView.hide();
 win.add(imageView);
+
+function uploadToTwitPic(image) {
+}
+
+function startCamera() {
+    Titanium.Media.showCamera(
+        {
+            success: function(e) {
+                var image = e.media;
+                imageView.image = image;
+                imageView.show();
+                uploadToTwitPic(image);
+            },
+            //cancel: function(){},
+            error: function(error) {
+                if (error.code == Titanium.Media.NO_CAMERA) {
+                    alert('カメラがありません');
+                }
+            },
+            saveToPhotoGallery: true,
+            allowEditting: true,
+            mediaTypes: [Ti.Media.MEDIA_TYPE_PHOTO] //MEDIA_TYPE_PHOTO を指定することにより静止画限定になる。指定しなければ動画が来る可能性あり
+        }
+    );
+}
+
+function selectFromPhotoGallery() {
+    Ti.Media.openPhotoGallery(
+        {
+            success: function(e) {
+                var image = e.media;
+                imageView.image = image;
+                imageView.show();
+                uploadToTwitPic(image);
+            },
+            //error: function(error){},
+            //cancel: function(){},
+            allowEditting: true,
+            mediaTypes: [Ti.Media.MEDIA_TYPE_PHOTO] //MEDIA_TYPE_PHOTO を指定することにより静止画限定になる。指定しなければ動画が来る可能性あり
+        }
+    );
+}
+
+var sourceSelect = Titanium.UI.createOptionDialog(
+    {
+        options: ['撮影する', 'アルバムから選ぶ', 'キャンセル'],
+        cancel: 2,
+        title: '写真を添付'
+    }
+);
+sourceSelect.addEventListener(
+    'click',
+    function(e) {
+        switch(e.index) {
+            case 0:
+                startCamera();
+                break;
+            case 1:
+                selectFromPhotoGallery();
+                break;
+        }
+    }
+);
+
+var photoButton = Ti.UI.createButton(
+    {
+        top: 170,
+        left: 120,
+        width: 80,
+        height: 44,
+        title: 'Photo'
+    }
+);
+
+photoButton.addEventListener(
+    'click',
+    function() {
+        sourceSelect.show();
+    }
+);
+win.add(photoButton);
+
