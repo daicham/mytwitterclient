@@ -132,3 +132,13 @@ locationButton.addEventListener(
     setCurrentPosition
 );
 win.add(locationButton);
+
+var imageView = Titanium.UI.createImageView(
+    {
+        width: 'auto',
+        height: 240,
+        top: 20
+    }
+);
+imageView.hide();
+win.add(imageView);
