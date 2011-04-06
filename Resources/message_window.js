@@ -21,38 +21,36 @@ var postButton = Ti.UI.createButton(
     }
 );
 
-Ti.include('lib/oauth_adapter.js');
-var oAuthAdapter = new OAuthAdapter(
-    'consumer_secret',
-    'consumer_key',
-    'HMAC-SHA1'
-);
-oAuthAdapter.loadAccessToken('twitter');
+Ti.include('lib/twitter_api.js');
 
+Ti.App.twitterApi = new TwitterApi({
+    consumerKey: 'consumerKey',
+    consumerSecret: 'consumerSecret'
+});
+var twitterApi = Ti.App.twitterApi;
+twitterApi.init();
+
+var latitude;
+var longitude;
 function tweet(message) {
-    oAuthAdapter.send(
-        'https://api.twitter.com/1/statuses/update.json',
-        [['status', message]],
-        'Twitter', //アラートのタイトル
-        'Published.', //成功したときのアラートメッセージ
-        'Not published.' //失敗したときのアラートメッセージ
-    );
-
-    if (oAuthAdapter.isAuthorized() == false) {
-        var receivePin = function() {
-            oAuthAdapter.getAccessToken(
-                'https://api.twitter.com/oauth/access_token'
-            );
-            oAuthAdapter.saveAccessToken('twitter');
-        };
-        oAuthAdapter.showAuthorizeUI(
-            'https://api.twitter.com/oauth/authorize?' +
-                oAuthAdapter.getRequestToken(
-                    'https://api.twitter.com/oauth/request_token'
-                ),
-            receivePin
-        );
+    var params = {status: message};
+    if (latitude && longitude) {
+        params['lat'] = latitude;
+        params['long'] = longitude;
     }
+    twitterApi.statuses_update(
+        {
+            onSuccess: function(response) {
+                alert('tweet success');
+                Ti.API.info(response);
+            },
+            onError: function(error) {
+                Ti.API.error(error);
+                Ti.API.error(error['source']);
+            },
+            parameters: params
+        }
+    );
 }
 
 postButton.addEventListener(

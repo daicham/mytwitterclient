@@ -151,13 +151,11 @@ var OAuthAdapter = function(pConsumerSecret, pConsumerKey, pSignatureMethod)
     };
 
     // creates a message to send to the service
-    var createMessage = function(pUrl)
+    var createMessage = function(pUrl, method)
     {
         var message = {
-            action: pUrl
-            ,
-            method: 'POST'
-            ,
+            action: pUrl ,
+            method: (method) ? method : 'POST' ,
             parameters: []
         };
         message.parameters.push(['oauth_consumer_key', consumerKey]);
@@ -343,64 +341,114 @@ var OAuthAdapter = function(pConsumerSecret, pConsumerKey, pSignatureMethod)
     {
         Ti.API.debug('Processing queue.');
         while ((q = actionsQueue.shift()) != null)
-        send(q.url, q.parameters, q.title, q.successMessage, q.errorMessage);
+        send(q);
 
         Ti.API.debug('Processing queue: done.');
     };
+    var oauthParams = "OAuth realm,oauth_version,oauth_consumer_key,oauth_nonce,oauth_signature,oauth_signature_method,oauth_timestamp,oauth_token".split(',');
+    var makeAuthorizationHeaderString = function(params) {
+        var str = ''; 
+        for (var i = 0, len = oauthParams.length; i < len ; i++) {
+            var key = oauthParams[i];
+            if (params[key] != undefined) str += key + '="' + encodeURIComponent(params[key]) + '",';
+        }
+        Ti.API.debug('authorization header string : ' + str);
+        return str;
+    }
 
-    // TODO: remove this on a separate Twitter library
-    var send = function(pUrl, pParameters, pTitle, pSuccessMessage, pErrorMessage)
-    {
+    var removeOAuthParams = function(parameters) {
+        var checkString = oauthParams.join(',') + ',';
+        for (var p in parameters) {
+           if (checkString.indexOf(p + ",") >= 0) delete parameters[p]; 
+        }
+    }
+
+    var makePostURL = function(url,parameters) {
+        var checkString = oauthParams.join(',') + ',';
+        var query = [];
+        var newParameters = [];
+        for (var i = 0 , len = parameters.length; i < len ; i++) {
+           var item = parameters[i];
+           if (checkString.indexOf(item[0] + ",") < 0) {
+                query.push(encodeURIComponent(item[0]) + "=" + encodeURIComponent(item[1])); 
+           } else {
+               newParameters.push[item];
+           }
+        }
+        parameters = newParameters;
+        if (query.length) {
+            query = query.join('&');
+            return [url + ((url.indexOf('?') >= 0) ? '&' : '?') + query, parameters];
+        } else {
+            return [url, parameters];
+        }
+    }
+    var makeGetURL = function(url, parameterMap) {
+        var query = [];
+        var keys = [];
+        for (var p in parameterMap) {
+           query.push( encodeURIComponent(p) + "=" + encodeURIComponent(parameterMap[p]) ); 
+        }
+				query.sort();//(9.1.1.  Normalize Request Parameters)
+        if (query.length) {
+            query = query.join('&');
+            return url + ((url.indexOf('?') >= 0) ? '&' : '?') + query;
+        } else {
+            return url;
+        }
+    }
+
+    var send = function(params) {
+        var pUrl            = params.url;
+        var pParameters     = params.parameters || [];
+        var pTitle          = params.title;
+        var pMethod         = params.method || "POST";
+        var resultByXML      = params.resultByXML || false;
+
         Ti.API.debug('Sending a message to the service at [' + pUrl + '] with the following params: ' + JSON.stringify(pParameters));
-
         if (accessToken == null || accessTokenSecret == null)
         {
-
             Ti.API.debug('The send status cannot be processed as the client doesn\'t have an access token. The status update will be sent as soon as the client has an access token.');
-
-            actionsQueue.push({
-                url: pUrl,
-                parameters: pParameters,
-                title: pTitle,
-                successMessage: pSuccessMessage,
-                errorMessage: pErrorMessage
-            });
+            actionsQueue.push(params);
             return;
         }
 
         accessor.tokenSecret = accessTokenSecret;
-
-        var message = createMessage(pUrl);
+        var message = createMessage(pUrl, pMethod);
         message.parameters.push(['oauth_token', accessToken]);
         for (p in pParameters) message.parameters.push(pParameters[p]);
         OAuth.setTimestampAndNonce(message);
         OAuth.SignatureMethod.sign(message, accessor);
-
         var parameterMap = OAuth.getParameterMap(message.parameters);
-        for (var p in parameterMap)
-        Ti.API.debug(p + ': ' + parameterMap[p]);
-
+        for (var p in parameterMap) Ti.API.debug(p + ': ' + parameterMap[p]);
+        if (pMethod == "GET") {
+            pUrl = makeGetURL(pUrl, parameterMap);
+            parameterMap = null;
+            Ti.API.debug('url for GET:'+pUrl);
+        }
         var client = Ti.Network.createHTTPClient();
-        client.open('POST', pUrl, false);
+        client.onerror = function(e){
+          Ti.API.debug(e);
+          if(params.onError){
+            params.onError(e);
+          }
+        }
+        client.onload = function(){
+          Ti.API.debug('*** sendStatus, Response: [' + client.status + '] ' + client.responseText);
+          if ((""+client.status).match(/^20[0-9]/)) {
+            if(params.onSuccess){
+              params.onSuccess(client.responseText);
+            }
+          } else {
+            if(params.onError){
+              params.onError({error:'[' + client.status + '] ' + client.responseText});
+            }
+          }
+        }
+        client.open(pMethod, pUrl, false);
         client.send(parameterMap);
 
-        if (client.status == 200) {
-            Ti.UI.createAlertDialog({
-                title: pTitle,
-                message: pSuccessMessage
-            }).show();
-        } else {
-            Ti.UI.createAlertDialog({
-                title: pTitle,
-                message: pErrorMessage
-            }).show();
-        }
-
-        Ti.API.debug('*** sendStatus, Response: [' + client.status + '] ' + client.responseText);
-
-        return client.responseText;
-
+        return null;
     };
     this.send = send;
-
 };
