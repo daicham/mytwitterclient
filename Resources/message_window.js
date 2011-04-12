@@ -250,3 +250,23 @@ photoButton.addEventListener(
 );
 win.add(photoButton);
 
+Titanium.Gesture.addEventListener(
+    'shake',
+    function(){
+        var alertDialog = Titanium.UI.createAlertDialog(
+            {
+                title: '入力をキャンセルしますか?',
+                buttonNames: ['入力をキャンセル', '編集を続行'],
+            }
+        );
+        alertDialog.addEventListener(
+            'click',
+            function(e) {
+                if (e.index == 0) {
+                    win.close();
+                }
+            }
+        );
+        alertDialog.show();
+    }
+);
