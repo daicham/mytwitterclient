@@ -270,3 +270,37 @@ Titanium.Gesture.addEventListener(
         alertDialog.show();
     }
 );
+
+function postByAccelerometer(e) {
+    if ( Math.abs(e.z) > 1.1 ) {
+        accEnabled = false;            
+        Ti.Accelerometer.removeEventListener('update',postByAccelerometer);
+        tweet('iPhoneに触られた!');
+    }
+}
+
+var accEnabled = false;
+var accButton = Ti.UI.createButton(
+    {
+        top: 160,
+        left: 190,
+        width: 44,
+        height: 44,
+        title: 'Acc'
+    }
+);
+accButton.addEventListener(
+    'click',
+    function () {
+        if (accEnabled) {
+            alert('無効にします');
+            accEnabled = false;            
+            Ti.Accelerometer.removeEventListener('update',postByAccelerometer);
+        } else {
+            alert('有効にします');
+            accEnabled = true;
+            Ti.Accelerometer.addEventListener('update',postByAccelerometer);
+        }
+    }
+);
+win.add(accButton);
